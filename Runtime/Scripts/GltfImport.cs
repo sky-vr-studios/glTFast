@@ -62,6 +62,13 @@ using Debug = UnityEngine.Debug;
 [assembly: InternalsVisibleTo("glTFast.Editor.Tests")]
 [assembly: InternalsVisibleTo("glTFast.Export")]
 
+namespace System
+{
+    public enum IAsyncDisposable
+    {
+    }
+}
+
 namespace GLTFast
 {
 
