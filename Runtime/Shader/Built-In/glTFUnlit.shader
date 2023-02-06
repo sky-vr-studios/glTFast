@@ -32,6 +32,8 @@ Properties {
     [HideInInspector] _DstBlend ("__dst", Float) = 0.0
     [HideInInspector] _ZWrite ("__zw", Float) = 1.0
     [Enum(UnityEngine.Rendering.CullMode)] _CullMode ("Cull Mode", Float) = 2.0
+    sliceNormal ("normal", Vector) = (0,1,0,0)
+    sliceCentre ("centre", Vector) = (0,1000,0,0)
 }
 
 SubShader {
@@ -54,6 +56,9 @@ SubShader {
             #include "UnityCG.cginc"
             #include "glTFIncludes/glTFUnityStandardInput.cginc"
 
+            float3 sliceNormal;
+            float3 sliceCentre;
+
             struct appdata_t {
                 float4 vertex : POSITION;
                 float2 texcoord0 : TEXCOORD0;
@@ -65,6 +70,7 @@ SubShader {
             struct v2f {
                 float4 vertex : SV_POSITION;
                 float2 texcoord : TEXCOORD0;
+                float3 worldPos : TEXCOORD1;
                 fixed4 color : COLOR;
                 float pointSize : PSIZE;
                 UNITY_FOG_COORDS(1)
@@ -78,6 +84,7 @@ SubShader {
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.texcoord = TexCoordsSingle((baseColorTexture_texCoord==0)?v.texcoord0:v.texcoord1, baseColorTexture);
+                o.worldPos = mul (unity_ObjectToWorld, v.vertex);
 
                 UNITY_TRANSFER_FOG(o,o.vertex);
 #ifdef UNITY_COLORSPACE_GAMMA
@@ -94,6 +101,7 @@ SubShader {
             {
                 fixed4 col = tex2D(baseColorTexture, i.texcoord) * baseColorFactor;
                 col *= i.color;
+                clip (dot(sliceCentre - i.worldPos, sliceNormal));
 #ifdef _ALPHATEST_ON
                 clip(col.a - alphaCutoff);
 #endif
